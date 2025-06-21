@@ -1,0 +1,59 @@
+name: Publish to OnePub
+
+on:
+  workflow_dispatch:
+    inputs:
+      increment:
+        description: 'Which version portion to bump'
+        required: true
+        type: choice
+        options:
+          - minor
+          - major
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install onepub CLI
+        run: dart pub global activate onepub
+
+      - name: Authenticate to OnePub
+        env:
+          ONEPUB_TOKEN: ${{ secrets.ONEPUB_TOKEN }}
+        run: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          onepub import
+
+      - name: Bump version (${{
+          github.event.inputs.increment }})
+        id: version
+        run: |
+          if [ "${{ github.event.inputs.increment }}" = "major" ]; then
+            dart pub version major
+          else
+            dart pub version minor
+          fi
+          echo "::set-output name=version::$(dart pub version --machine | jq -r .version)"
+
+      - name: Publish to OnePub
+        env:
+          PUB_HOSTED_URL: https://onepub.dev/api/kjhxxpsdav
+        run: |
+          dart pub publish --force
+
+      - name: Create Release Tag
+        run: |
+          git config user.name "shashwatxx"
+          git config user.email "shashwat@circuskicthens.com"
+          git tag v${{ steps.version.outputs.version }}
+          git push origin v${{ steps.version.outputs.version }}
