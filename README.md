@@ -86,11 +86,8 @@ class HoverOverExample extends StatelessWidget {
 
 
 
-## Next Goals
- 
- - [ ] Add more hover effects to the package.
- - [ ] Add more hover functionality to the package.
-
 
 ## Contributors
 * [**Sameer Singh**](https://github.com/sameersingh2704)
+* [**Felix Wöstmann**](https://github.com/felixwoestmann)
+* [**Shashwat Mishra**](https://github.com/shashwatxx)
