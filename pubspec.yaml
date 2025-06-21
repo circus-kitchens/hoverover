@@ -1,11 +1,14 @@
 name: hoverover
 description: A Flutter package that will give hover effect for Web and Desktop.
 version: 0.1.1
-homepage: https://github.com/sameersingh2704/hoverover
+homepage: https://github.com/circus-kitchens/hoverover
+repository: https://github.com/circus-kitchens/hoverover
+publish_to: https://onepub.dev/api/kjhxxpsdav
+
 
 environment:
-  sdk: ">=2.15.0 <3.0.0"
-  flutter: ">=1.17.0"
+  sdk: ">=3.8.1"
+  flutter: ">=3.20.0"
 
 dependencies:
   flutter:
