@@ -3,7 +3,7 @@ description: A Flutter package that will give hover effect for Web and Desktop.
 version: 0.1.1
 homepage: https://github.com/circus-kitchens/hoverover
 repository: https://github.com/circus-kitchens/hoverover
-publish_to: https://onepub.dev/api/kjhxxpsdav
+publish_to: https://onepub.dev/api/kjhxxpsdav/
 
 
 environment:
