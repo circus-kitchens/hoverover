@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       increment:
-        description: 'Which version portion to bump'
+        description: 'Which version segment to bump'
         required: true
         type: choice
         options:
@@ -19,12 +19,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up Dart
+      - name: Set up Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
 
-      - name: Install onepub CLI
+      - name: Install OnePub CLI
         run: dart pub global activate onepub
 
       - name: Authenticate to OnePub
@@ -34,26 +34,22 @@ jobs:
           export PATH="$PATH:$HOME/.pub-cache/bin"
           onepub import
 
-      - name: Bump version (${{
-          github.event.inputs.increment }})
-        id: version
+      - name: Bump version (${{ github.event.inputs.increment }})
+        id: bump
         run: |
-          if [ "${{ github.event.inputs.increment }}" = "major" ]; then
-            dart pub version major
-          else
-            dart pub version minor
-          fi
-          echo "::set-output name=version::$(dart pub version --machine | jq -r .version)"
+          dart pub bump ${{ github.event.inputs.increment }}
+          echo "NEW_VERSION=$(dart pub version --machine | jq -r .version)" >> $GITHUB_OUTPUT
 
       - name: Publish to OnePub
         env:
-          PUB_HOSTED_URL: https://onepub.dev/api/kjhxxpsdav
-        run: |
-          dart pub publish --force
+          PUB_HOSTED_URL: https://onepub.dev
+        run: dart pub publish --force
 
-      - name: Create Release Tag
+      - name: Tag and push release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "shashwatxx"
-          git config user.email "shashwat@circuskicthens.com"
-          git tag v${{ steps.version.outputs.version }}
-          git push origin v${{ steps.version.outputs.version }}
+          git config user.email "shashwat@circuskitchens.com"
+          git tag v${{ steps.bump.outputs.NEW_VERSION }}
+          git push origin v${{ steps.bump.outputs.NEW_VERSION }}
