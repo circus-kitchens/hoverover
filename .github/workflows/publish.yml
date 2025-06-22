@@ -27,29 +27,30 @@ jobs:
       - name: Install OnePub CLI
         run: dart pub global activate onepub
 
-      - name: Authenticate to OnePub
-        env:
-          ONEPUB_TOKEN: ${{ secrets.ONEPUB_TOKEN }}
-        run: |
-          export PATH="$PATH:$HOME/.pub-cache/bin"
-          onepub import
+      - name: Get dependencies
+        run: dart pub get
 
-      - name: Bump version (${{ github.event.inputs.increment }})
-        id: bump
+      - name: Authenticate with OnePub
+        run: onepub login --token ${{ secrets.ONEPUB_TOKEN }}
+
+      - name: Bump version
         run: |
-          dart pub bump ${{ github.event.inputs.increment }}
-          echo "NEW_VERSION=$(dart pub version --machine | jq -r .version)" >> $GITHUB_OUTPUT
+          if [ "${{ github.event.inputs.increment }}" = "major" ]; then
+            dart pub global activate cider
+            cider bump major
+          elif [ "${{ github.event.inputs.increment }}" = "minor" ]; then
+            dart pub global activate cider
+            cider bump minor
+          fi
 
       - name: Publish to OnePub
-        env:
-          PUB_HOSTED_URL: https://onepub.dev
-        run: dart pub publish --force
+        run: onepub pub publish --force
 
-      - name: Tag and push release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit version bump
         run: |
-          git config user.name "shashwatxx"
-          git config user.email "shashwat@circuskitchens.com"
-          git tag v${{ steps.bump.outputs.NEW_VERSION }}
-          git push origin v${{ steps.bump.outputs.NEW_VERSION }}
+          git config --local user.email "shashwat@circuskitchens.com"
+          git config --local user.name "shashwatxx"
+          git add .
+          git commit -m "Bump version to $(dart pub deps --json | jq -r '.packages[] | select(.name == "hoverover") | .version')" || exit 0
+          git push
+
